@@ -29,7 +29,8 @@ func (s *Sphere) Hit(ray Ray, min, max float64, rec *HitRecord) bool {
 
 	rec.T = root
 	rec.P = ray.At(rec.T)
-	rec.Normal = rec.P.Sub(s.Center).Div(s.Radius)
+	outwardNormal := rec.P.Sub(s.Center).Div(s.Radius)
+	rec.SetFaceNormal(ray, outwardNormal)
 
 	return true
 }
