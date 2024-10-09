@@ -46,7 +46,20 @@ func main() {
 }
 
 func RayColor(r t.Ray) t.Color {
+	if HitSphere(t.Point{0, 0, -1}, 0.5, r) {
+		return t.Color{1, 0, 0}
+	}
 	unitDirection := r.Direction.UnitVector()
 	a := 0.5 * (unitDirection[1] + 1.0)
 	return t.Color{1.0, 1.0, 1.0}.Mul(1.0 - a).Add(t.Color{0.5, 0.7, 1.0}.Mul(a))
+}
+
+func HitSphere(center t.Point, radius float64, ray t.Ray) bool {
+	oc := center.Sub(ray.Origin)
+	a := ray.Direction.Dot(ray.Direction)
+	b := -2.0 * ray.Direction.Dot(oc)
+	c := oc.Dot(oc) - radius*radius
+	discriminant := b*b - 4*a*c
+
+	return discriminant >= 0
 }
