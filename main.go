@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	t "github.com/mikowitz/tracer/pkg/tracer"
 )
 
 func main() {
@@ -14,15 +16,8 @@ func main() {
 	for y := range imageHeight {
 		fmt.Fprintf(os.Stderr, "\rScanlines remaining: %d", imageHeight-y)
 		for x := range imageWidth {
-			r := 0.0
-			g := float64(y) / float64(imageHeight-1)
-			b := float64(x) / float64(imageWidth-1)
-
-			ir := int(255.999 * r)
-			ig := int(255.999 * g)
-			ib := int(255.999 * b)
-
-			fmt.Printf("%d %d %d\n", ir, ig, ib)
+			color := t.Color{0, float64(y) / float64(imageHeight-1), float64(x) / float64(imageWidth-1)}
+			fmt.Println(color.ToPpm())
 		}
 	}
 	fmt.Fprintf(os.Stderr, "\rDone.                     \n")
