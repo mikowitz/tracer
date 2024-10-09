@@ -3,6 +3,8 @@ package tracer
 import "math"
 
 type Vec3 [3]float64
+type Vector = Vec3
+type Point = Vec3
 
 func (u Vec3) Neg() Vec3 {
 	return Vec3{-u[0], -u[1], -u[2]}
