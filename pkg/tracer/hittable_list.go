@@ -11,7 +11,7 @@ func (hl *HittableList) Hit(ray Ray, min, max float64, rec *HitRecord) bool {
 		if object.Hit(ray, min, closestSoFar, &tempRec) {
 			hitAnything = true
 			closestSoFar = tempRec.T
-			rec = &tempRec
+			*rec = tempRec
 		}
 	}
 
