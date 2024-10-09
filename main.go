@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 
 	t "github.com/mikowitz/tracer/pkg/tracer"
@@ -46,20 +47,25 @@ func main() {
 }
 
 func RayColor(r t.Ray) t.Color {
-	if HitSphere(t.Point{0, 0, -1}, 0.5, r) {
-		return t.Color{1, 0, 0}
+	hit := HitSphere(t.Point{0, 0, -1}, 0.5, r)
+	if hit > 0.0 {
+		n := r.At(hit).Sub(t.Vec3{0, 0, -1}).UnitVector()
+		return t.Color{n[0] + 1, n[1] + 1, n[2] + 1}.Mul(0.5)
 	}
 	unitDirection := r.Direction.UnitVector()
 	a := 0.5 * (unitDirection[1] + 1.0)
 	return t.Color{1.0, 1.0, 1.0}.Mul(1.0 - a).Add(t.Color{0.5, 0.7, 1.0}.Mul(a))
 }
 
-func HitSphere(center t.Point, radius float64, ray t.Ray) bool {
+func HitSphere(center t.Point, radius float64, ray t.Ray) float64 {
 	oc := center.Sub(ray.Origin)
 	a := ray.Direction.Dot(ray.Direction)
 	b := -2.0 * ray.Direction.Dot(oc)
 	c := oc.Dot(oc) - radius*radius
 	discriminant := b*b - 4*a*c
 
-	return discriminant >= 0
+	if discriminant < 0 {
+		return -1.0
+	}
+	return (-b - math.Sqrt(discriminant)) / (2.0 * a)
 }
