@@ -82,7 +82,7 @@ func (c Camera) rayColor(ray Ray, world HittableList, depth int) Color {
 
 	rec := HitRecord{}
 
-	if world.Hit(ray, Interval{Min: 0, Max: math.Inf(1)}, &rec) {
+	if world.Hit(ray, Interval{Min: 0.001, Max: math.Inf(1)}, &rec) {
 		direction := RandomOnHemisphere(rec.Normal)
 		return c.rayColor(Ray{Origin: rec.P, Direction: direction}, world, depth-1).Mul(0.5)
 	}
