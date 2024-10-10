@@ -13,6 +13,10 @@ type Metal struct {
 	Fuzz   float64
 }
 
+type Dielectric struct {
+	RefractionIndex float64
+}
+
 func (l *Lambertian) Scatter(ray Ray, rec HitRecord, attenuation *Color, scattered *Ray) bool {
 	scatterDirection := rec.Normal.Add(RandomUnitVector())
 	if scatterDirection.IsNearZero() {
@@ -28,5 +32,20 @@ func (m *Metal) Scatter(ray Ray, rec HitRecord, attenuation *Color, scattered *R
 	reflected = reflected.UnitVector().Add(RandomUnitVector().Mul(m.Fuzz))
 	*scattered = Ray{Origin: rec.P, Direction: reflected}
 	*attenuation = m.Albedo
+	return true
+}
+
+func (d *Dielectric) Scatter(ray Ray, rec HitRecord, attenuation *Color, scattered *Ray) bool {
+	ri := d.RefractionIndex
+	if rec.FrontFace {
+		ri = 1.0 / d.RefractionIndex
+	}
+
+	unitDirection := ray.Direction.UnitVector()
+	refracted := unitDirection.Refract(rec.Normal, ri)
+
+	*scattered = Ray{Origin: rec.P, Direction: refracted}
+	*attenuation = Color{1, 1, 1}
+
 	return true
 }
