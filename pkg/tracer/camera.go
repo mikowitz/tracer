@@ -16,6 +16,7 @@ type Camera struct {
 
 	samplesPerPixel   int
 	pixelsSampleScale float64
+	maxDepth          int
 }
 
 func NewCamera(imageWidth int, aspectRatio float64) Camera {
@@ -29,17 +30,21 @@ func (c *Camera) SetSamplesPerPixel(samples int) {
 	c.samplesPerPixel = samples
 }
 
+func (c *Camera) SetMaxDepth(depth int) {
+	c.maxDepth = depth
+}
+
 func (c *Camera) Render(world HittableList) {
 	c.initialize()
 	fmt.Printf("P3\n%d %d\n255\n", c.imageWidth, c.imageHeight)
 
 	for y := range c.imageHeight {
-		fmt.Fprintf(os.Stderr, "\rScanlines remaining: %d", c.imageHeight-y)
+		fmt.Fprintf(os.Stderr, "\rScanlines remaining: %5d", c.imageHeight-y)
 		for x := range c.imageWidth {
 			color := Color{0, 0, 0}
 			for _ = range c.samplesPerPixel {
 				ray := c.getRay(x, y)
-				color = color.Add(c.rayColor(ray, world))
+				color = color.Add(c.rayColor(ray, world, c.maxDepth))
 			}
 			fmt.Println(color.Mul(c.pixelsSampleScale).ToPpm())
 		}
@@ -70,11 +75,16 @@ func (c *Camera) initialize() {
 	c.pixel00Loc = viewportUpperLeft.Add(c.pixelΔU.Add(c.pixelΔV).Mul(0.5))
 }
 
-func (c Camera) rayColor(ray Ray, world HittableList) Color {
+func (c Camera) rayColor(ray Ray, world HittableList, depth int) Color {
+	if depth <= 0 {
+		return Color{0, 0, 0}
+	}
+
 	rec := HitRecord{}
 
 	if world.Hit(ray, Interval{Min: 0, Max: math.Inf(1)}, &rec) {
-		return rec.Normal.Add(Color{1, 1, 1}).Mul(0.5)
+		direction := RandomOnHemisphere(rec.Normal)
+		return c.rayColor(Ray{Origin: rec.P, Direction: direction}, world, depth-1).Mul(0.5)
 	}
 
 	unitDirection := ray.Direction.UnitVector()

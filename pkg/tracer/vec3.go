@@ -1,10 +1,47 @@
 package tracer
 
-import "math"
+import (
+	"math"
+	"math/rand/v2"
+)
 
 type Vec3 [3]float64
 type Vector = Vec3
 type Point = Vec3
+
+func RandomVec() Vec3 {
+	return Vec3{
+		rand.Float64(),
+		rand.Float64(),
+		rand.Float64(),
+	}
+}
+
+func RandomVecIn(min, max float64) Vec3 {
+	return Vec3{
+		RandomFloat64In(min, max),
+		RandomFloat64In(min, max),
+		RandomFloat64In(min, max),
+	}
+}
+
+func RandomUnitVector() Vec3 {
+	for {
+		p := RandomVecIn(-1, 1)
+		lensq := p.LengthSquared()
+		if 1e-160 < lensq && lensq <= 1.0 {
+			return p.UnitVector()
+		}
+	}
+}
+
+func RandomOnHemisphere(normal Vector) Vec3 {
+	onUnitSphere := RandomUnitVector()
+	if onUnitSphere.Dot(normal) > 0.0 {
+		return onUnitSphere
+	}
+	return onUnitSphere.Neg()
+}
 
 func (u Vec3) Neg() Vec3 {
 	return Vec3{-u[0], -u[1], -u[2]}
