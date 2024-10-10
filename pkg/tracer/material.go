@@ -10,6 +10,7 @@ type Lambertian struct {
 
 type Metal struct {
 	Albedo Color
+	Fuzz   float64
 }
 
 func (l *Lambertian) Scatter(ray Ray, rec HitRecord, attenuation *Color, scattered *Ray) bool {
@@ -24,6 +25,7 @@ func (l *Lambertian) Scatter(ray Ray, rec HitRecord, attenuation *Color, scatter
 
 func (m *Metal) Scatter(ray Ray, rec HitRecord, attenuation *Color, scattered *Ray) bool {
 	reflected := ray.Direction.Reflect(rec.Normal)
+	reflected = reflected.UnitVector().Add(RandomUnitVector().Mul(m.Fuzz))
 	*scattered = Ray{Origin: rec.P, Direction: reflected}
 	*attenuation = m.Albedo
 	return true

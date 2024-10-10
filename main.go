@@ -14,8 +14,8 @@ func main() {
 
 	groundMat := t.Lambertian{Albedo: t.Color{0.8, 0.8, 0}}
 	centerMat := t.Lambertian{Albedo: t.Color{0.1, 0.2, 0.5}}
-	leftMat := t.Metal{Albedo: t.Color{0.8, 0.8, 0.8}}
-	rightMat := t.Metal{Albedo: t.Color{0.8, 0.6, 0.2}}
+	leftMat := t.Metal{Albedo: t.Color{0.8, 0.8, 0.8}, Fuzz: 0.3}
+	rightMat := t.Metal{Albedo: t.Color{0.8, 0.6, 0.2}, Fuzz: 0.8}
 
 	world := t.HittableList{
 		&t.Sphere{Center: t.Point{0, -100.5, -1}, Radius: 100, Material: &groundMat},
