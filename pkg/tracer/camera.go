@@ -3,6 +3,7 @@ package tracer
 import (
 	"fmt"
 	"math"
+	"math/rand/v2"
 	"os"
 )
 
@@ -12,6 +13,9 @@ type Camera struct {
 	center                  Point
 	pixelΔU, pixelΔV        Vector
 	pixel00Loc              Point
+
+	samplesPerPixel   int
+	pixelsSampleScale float64
 }
 
 func NewCamera(imageWidth int, aspectRatio float64) Camera {
@@ -21,6 +25,10 @@ func NewCamera(imageWidth int, aspectRatio float64) Camera {
 	}
 }
 
+func (c *Camera) SetSamplesPerPixel(samples int) {
+	c.samplesPerPixel = samples
+}
+
 func (c *Camera) Render(world HittableList) {
 	c.initialize()
 	fmt.Printf("P3\n%d %d\n255\n", c.imageWidth, c.imageHeight)
@@ -28,11 +36,12 @@ func (c *Camera) Render(world HittableList) {
 	for y := range c.imageHeight {
 		fmt.Fprintf(os.Stderr, "\rScanlines remaining: %d", c.imageHeight-y)
 		for x := range c.imageWidth {
-			pixelCenter := c.pixel00Loc.Add(c.pixelΔU.Mul(float64(x))).Add(c.pixelΔV.Mul(float64(y)))
-			rayDirection := pixelCenter.Sub(c.center)
-			ray := Ray{Origin: c.center, Direction: rayDirection}
-			color := c.rayColor(ray, world)
-			fmt.Println(color.ToPpm())
+			color := Color{0, 0, 0}
+			for _ = range c.samplesPerPixel {
+				ray := c.getRay(x, y)
+				color = color.Add(c.rayColor(ray, world))
+			}
+			fmt.Println(color.Mul(c.pixelsSampleScale).ToPpm())
 		}
 	}
 	fmt.Fprintf(os.Stderr, "\rDone.                     \n")
@@ -43,6 +52,8 @@ func (c *Camera) initialize() {
 	if c.imageHeight < 1 {
 		c.imageHeight = 1
 	}
+
+	c.pixelsSampleScale = 1.0 / float64(c.samplesPerPixel)
 
 	focalLength := 1.0
 	viewportHeight := 2.0
@@ -69,4 +80,14 @@ func (c Camera) rayColor(ray Ray, world HittableList) Color {
 	unitDirection := ray.Direction.UnitVector()
 	a := 0.5 * (unitDirection[1] + 1.0)
 	return Color{1.0, 1.0, 1.0}.Mul(1.0 - a).Add(Color{0.5, 0.7, 1.0}.Mul(a))
+}
+
+func (c Camera) getRay(x, y int) Ray {
+	xOffset := rand.Float64() - 0.5
+	yOffset := rand.Float64() - 0.5
+
+	pixelSample := c.pixel00Loc.Add(c.pixelΔU.Mul(xOffset + float64(x))).Add(c.pixelΔV.Mul(yOffset + float64(y)))
+
+	direction := pixelSample.Sub(c.center)
+	return Ray{Origin: c.center, Direction: direction}
 }
