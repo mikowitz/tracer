@@ -1,6 +1,9 @@
 package tracer
 
-import "math"
+import (
+	"math"
+	"math/rand/v2"
+)
 
 type Material interface {
 	Scatter(ray Ray, rec HitRecord, attenuation *Color, scattered *Ray) bool
@@ -49,7 +52,7 @@ func (d *Dielectric) Scatter(ray Ray, rec HitRecord, attenuation *Color, scatter
 	cannotRefract := ri*sinθ > 1.0
 
 	direction := unitDirection.Refract(rec.Normal, ri)
-	if cannotRefract {
+	if cannotRefract || reflectance(cosθ, ri) > rand.Float64() {
 		direction = unitDirection.Reflect(rec.Normal)
 	}
 
@@ -57,4 +60,10 @@ func (d *Dielectric) Scatter(ray Ray, rec HitRecord, attenuation *Color, scatter
 	*attenuation = Color{1, 1, 1}
 
 	return true
+}
+
+func reflectance(cosine, refractionIndex float64) float64 {
+	r0 := (1 - refractionIndex) / (1 + refractionIndex)
+	r0 *= r0
+	return r0 + (1-r0)*math.Pow(1-cosine, 5)
 }
