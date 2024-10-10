@@ -99,6 +99,10 @@ func (u Vec3) Cross(v Vec3) Vec3 {
 	}
 }
 
+func (u Vec3) Reflect(n Vec3) Vector {
+	return u.Sub(n.Mul(2.0 * u.Dot(n)))
+}
+
 func (u Vec3) UnitVector() Vec3 {
 	return u.Div(u.Length())
 }
