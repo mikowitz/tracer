@@ -99,6 +99,15 @@ func (u Vec3) Cross(v Vec3) Vec3 {
 	}
 }
 
+func (u Vec3) Reflect(n Vec3) Vector {
+	return u.Sub(n.Mul(2.0 * u.Dot(n)))
+}
+
 func (u Vec3) UnitVector() Vec3 {
 	return u.Div(u.Length())
+}
+
+func (u Vec3) IsNearZero() bool {
+	s := 1e-8
+	return math.Abs(u[0]) < s && math.Abs(u[1]) < s && math.Abs(u[2]) < s
 }

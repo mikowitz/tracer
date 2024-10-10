@@ -83,9 +83,12 @@ func (c Camera) rayColor(ray Ray, world HittableList, depth int) Color {
 	rec := HitRecord{}
 
 	if world.Hit(ray, Interval{Min: 0.001, Max: math.Inf(1)}, &rec) {
-		// direction := RandomOnHemisphere(rec.Normal)
-		direction := rec.Normal.Add(RandomUnitVector())
-		return c.rayColor(Ray{Origin: rec.P, Direction: direction}, world, depth-1).Mul(0.5)
+		scattered := Ray{}
+		attenuation := Color{}
+		if rec.Material.Scatter(ray, rec, &attenuation, &scattered) {
+			return c.rayColor(scattered, world, depth-1).Prod(attenuation)
+		}
+		return Color{0, 0, 0}
 	}
 
 	unitDirection := ray.Direction.UnitVector()
