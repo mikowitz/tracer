@@ -9,6 +9,7 @@ func main() {
 	aspectRatio := 16.0 / 9.0
 
 	camera := t.NewCamera(imageWidth, aspectRatio)
+	camera.SetSamplesPerPixel(100)
 
 	world := t.HittableList{
 		&t.Sphere{Center: t.Point{0, 0, -1}, Radius: 0.5},
