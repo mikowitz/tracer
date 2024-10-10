@@ -3,8 +3,9 @@ package tracer
 import "math"
 
 type Sphere struct {
-	Center Point
-	Radius float64
+	Center   Point
+	Radius   float64
+	Material Material
 }
 
 func (s *Sphere) Hit(ray Ray, interval Interval, rec *HitRecord) bool {
@@ -31,6 +32,7 @@ func (s *Sphere) Hit(ray Ray, interval Interval, rec *HitRecord) bool {
 	(*rec).P = ray.At(rec.T)
 	outwardNormal := rec.P.Sub(s.Center).Div(s.Radius)
 	(*rec).SetFaceNormal(ray, outwardNormal)
+	(*rec).Material = s.Material
 
 	return true
 }

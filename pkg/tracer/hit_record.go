@@ -5,6 +5,7 @@ type HitRecord struct {
 	Normal    Vector
 	T         float64
 	FrontFace bool
+	Material  Material
 }
 
 func (hr *HitRecord) SetFaceNormal(ray Ray, outwardNormal Vector) {
