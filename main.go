@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	imageWidth := 400
+	imageWidth := 1200
 	aspectRatio := 16.0 / 9.0
 
 	camera := t.NewCamera(imageWidth, aspectRatio)
