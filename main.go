@@ -53,23 +53,10 @@ func main() {
 
 func RayColor(r t.Ray, world t.HittableList) t.Color {
 	rec := t.HitRecord{}
-	if world.Hit(r, 0, math.Inf(1), &rec) {
+	if world.Hit(r, t.Interval{Min: 0, Max: math.Inf(1)}, &rec) {
 		return rec.Normal.Add(t.Color{1, 1, 1}).Mul(0.5)
 	}
 	unitDirection := r.Direction.UnitVector()
 	a := 0.5 * (unitDirection[1] + 1.0)
 	return t.Color{1.0, 1.0, 1.0}.Mul(1.0 - a).Add(t.Color{0.5, 0.7, 1.0}.Mul(a))
-}
-
-func HitSphere(center t.Point, radius float64, ray t.Ray) float64 {
-	oc := center.Sub(ray.Origin)
-	a := ray.Direction.LengthSquared()
-	h := ray.Direction.Dot(oc)
-	c := oc.LengthSquared() - radius*radius
-	discriminant := h*h - a*c
-
-	if discriminant < 0 {
-		return -1.0
-	}
-	return (h - math.Sqrt(discriminant)) / a
 }
