@@ -10,6 +10,7 @@ func main() {
 
 	camera := t.NewCamera(imageWidth, aspectRatio)
 	camera.SetSamplesPerPixel(100)
+	camera.SetMaxDepth(50)
 
 	world := t.HittableList{
 		&t.Sphere{Center: t.Point{0, 0, -1}, Radius: 0.5},
