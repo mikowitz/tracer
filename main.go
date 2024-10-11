@@ -81,7 +81,7 @@ func finalImage() {
 		}
 	}
 
-	camera := t.NewCamera(1200, 16.0/9.0)
+	camera := t.NewCamera(400, 16.0/9.0)
 	camera.SetSamplesPerPixel(100)
 	camera.SetMaxDepth(10)
 
