@@ -11,6 +11,12 @@ func main() {
 	camera := t.NewCamera(imageWidth, aspectRatio)
 	camera.SetSamplesPerPixel(100)
 	camera.SetMaxDepth(50)
+	camera.SetVerticalFieldOfView(20)
+	camera.SetOrientation(
+		t.Point{-2, 2, 1},
+		t.Point{0, 0, -1},
+		t.Vector{0, 1, 0},
+	)
 
 	groundMat := t.Lambertian{Albedo: t.Color{0.8, 0.8, 0}}
 	centerMat := t.Lambertian{Albedo: t.Color{0.1, 0.2, 0.5}}
