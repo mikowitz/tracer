@@ -18,7 +18,9 @@ type Camera struct {
 	pixelsSampleScale float64
 	maxDepth          int
 
-	vfov float64
+	vfov             float64
+	lookfrom, lookat Point
+	vup              Vector
 }
 
 func NewCamera(imageWidth int, aspectRatio float64) Camera {
@@ -38,6 +40,12 @@ func (c *Camera) SetMaxDepth(depth int) {
 
 func (c *Camera) SetVerticalFieldOfView(vfov float64) {
 	c.vfov = vfov
+}
+
+func (c *Camera) SetOrientation(lookfrom, lookat, vup Vec3) {
+	c.lookfrom = lookfrom
+	c.lookat = lookat
+	c.vup = vup
 }
 
 func (c *Camera) Render(world HittableList) {
@@ -66,20 +74,25 @@ func (c *Camera) initialize() {
 
 	c.pixelsSampleScale = 1.0 / float64(c.samplesPerPixel)
 
-	focalLength := 1.0
+	c.center = c.lookfrom
+
+	focalLength := c.lookfrom.Sub(c.lookat).Length()
 	θ := DegreesToRadians(c.vfov)
 	h := math.Tan(θ / 2)
 	viewportHeight := 2 * h * focalLength
 	viewportWidth := viewportHeight * (float64(c.imageWidth) / float64(c.imageHeight))
-	c.center = Point{0, 0, 0}
 
-	viewportU := Vector{viewportWidth, 0, 0}
-	viewportV := Vector{0, -viewportHeight, 0}
+	w := c.lookfrom.Sub(c.lookat).UnitVector()
+	u := c.vup.Cross(w).UnitVector()
+	v := w.Cross(u)
+
+	viewportU := u.Mul(viewportWidth)
+	viewportV := v.Neg().Mul(viewportHeight)
 
 	c.pixelΔU = viewportU.Div(float64(c.imageWidth))
 	c.pixelΔV = viewportV.Div(float64(c.imageHeight))
 
-	viewportUpperLeft := c.center.Sub(Vector{0, 0, focalLength}).Sub(viewportU.Div(2)).Sub(viewportV.Div(2))
+	viewportUpperLeft := c.center.Sub(w.Mul(focalLength)).Sub(viewportU.Div(2)).Sub(viewportV.Div(2))
 	c.pixel00Loc = viewportUpperLeft.Add(c.pixelΔU.Add(c.pixelΔV).Mul(0.5))
 }
 
