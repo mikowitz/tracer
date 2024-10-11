@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"math"
 	"math/rand/v2"
-	"os"
+	"strings"
+	"sync"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 type Camera struct {
@@ -60,18 +63,30 @@ func (c *Camera) Render(world HittableList) {
 	c.initialize()
 	fmt.Printf("P3\n%d %d\n255\n", c.imageWidth, c.imageHeight)
 
+	bar := progressbar.Default(int64(c.imageWidth * c.imageHeight))
+	rows := make([]string, c.imageHeight)
+
+	var wg sync.WaitGroup
 	for y := range c.imageHeight {
-		fmt.Fprintf(os.Stderr, "\rScanlines remaining: %8d", c.imageHeight-y)
-		for x := range c.imageWidth {
-			color := Color{0, 0, 0}
-			for _ = range c.samplesPerPixel {
-				ray := c.getRay(x, y)
-				color = color.Add(c.rayColor(ray, world, c.maxDepth))
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			row := make([]string, c.imageWidth)
+			for x := range c.imageWidth {
+				color := Color{0, 0, 0}
+				for _ = range c.samplesPerPixel {
+					ray := c.getRay(x, y)
+					color = color.Add(c.rayColor(ray, &world, c.maxDepth))
+				}
+				row = append(row, color.Mul(c.pixelsSampleScale).ToPpm())
+				bar.Add(1)
 			}
-			fmt.Println(color.Mul(c.pixelsSampleScale).ToPpm())
-		}
+			rows[y] = strings.Join(row, "\n")
+		}()
 	}
-	fmt.Fprintf(os.Stderr, "\rDone.                             \n")
+	wg.Wait()
+
+	fmt.Println(strings.Join(rows, "\n"))
 }
 
 func (c *Camera) initialize() {
@@ -107,7 +122,7 @@ func (c *Camera) initialize() {
 	c.defocusDiskV = v.Mul(defocusRadius)
 }
 
-func (c Camera) rayColor(ray Ray, world HittableList, depth int) Color {
+func (c *Camera) rayColor(ray Ray, world *HittableList, depth int) Color {
 	if depth <= 0 {
 		return Color{0, 0, 0}
 	}
