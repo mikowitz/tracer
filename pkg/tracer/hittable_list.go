@@ -17,3 +17,11 @@ func (hl *HittableList) Hit(ray Ray, interval Interval, rec *HitRecord) bool {
 
 	return hitAnything
 }
+
+func (hl *HittableList) BoundingBox() Aabb {
+	var bbox Aabb
+	for _, object := range *hl {
+		bbox = NewBoundingBoxFromBoundingBoxes(bbox, object.BoundingBox())
+	}
+	return bbox
+}
