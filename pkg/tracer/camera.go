@@ -21,6 +21,9 @@ type Camera struct {
 	vfov             float64
 	lookfrom, lookat Point
 	vup              Vector
+
+	defocusAngle, focusDist    float64
+	defocusDiskU, defocusDiskV Vector
 }
 
 func NewCamera(imageWidth int, aspectRatio float64) Camera {
@@ -46,6 +49,11 @@ func (c *Camera) SetOrientation(lookfrom, lookat, vup Vec3) {
 	c.lookfrom = lookfrom
 	c.lookat = lookat
 	c.vup = vup
+}
+
+func (c *Camera) SetFocus(defocusAngle, focusDist float64) {
+	c.defocusAngle = defocusAngle
+	c.focusDist = focusDist
 }
 
 func (c *Camera) Render(world HittableList) {
@@ -76,10 +84,9 @@ func (c *Camera) initialize() {
 
 	c.center = c.lookfrom
 
-	focalLength := c.lookfrom.Sub(c.lookat).Length()
 	θ := DegreesToRadians(c.vfov)
 	h := math.Tan(θ / 2)
-	viewportHeight := 2 * h * focalLength
+	viewportHeight := 2 * h * c.focusDist
 	viewportWidth := viewportHeight * (float64(c.imageWidth) / float64(c.imageHeight))
 
 	w := c.lookfrom.Sub(c.lookat).UnitVector()
@@ -92,8 +99,12 @@ func (c *Camera) initialize() {
 	c.pixelΔU = viewportU.Div(float64(c.imageWidth))
 	c.pixelΔV = viewportV.Div(float64(c.imageHeight))
 
-	viewportUpperLeft := c.center.Sub(w.Mul(focalLength)).Sub(viewportU.Div(2)).Sub(viewportV.Div(2))
+	viewportUpperLeft := c.center.Sub(w.Mul(c.focusDist)).Sub(viewportU.Div(2)).Sub(viewportV.Div(2))
 	c.pixel00Loc = viewportUpperLeft.Add(c.pixelΔU.Add(c.pixelΔV).Mul(0.5))
+
+	defocusRadius := c.focusDist * math.Tan(DegreesToRadians(c.defocusAngle/2))
+	c.defocusDiskU = u.Mul(defocusRadius)
+	c.defocusDiskV = v.Mul(defocusRadius)
 }
 
 func (c Camera) rayColor(ray Ray, world HittableList, depth int) Color {
@@ -123,6 +134,15 @@ func (c Camera) getRay(x, y int) Ray {
 
 	pixelSample := c.pixel00Loc.Add(c.pixelΔU.Mul(xOffset + float64(x))).Add(c.pixelΔV.Mul(yOffset + float64(y)))
 
-	direction := pixelSample.Sub(c.center)
-	return Ray{Origin: c.center, Direction: direction}
+	origin := c.center
+	if c.defocusAngle > 0 {
+		origin = c.defocusDiskSample()
+	}
+	direction := pixelSample.Sub(origin)
+	return Ray{Origin: origin, Direction: direction}
+}
+
+func (c Camera) defocusDiskSample() Point {
+	p := RandomInUnitDisk()
+	return c.center.Add(c.defocusDiskU.Mul(p[0])).Add(c.defocusDiskV.Mul(p[1]))
 }

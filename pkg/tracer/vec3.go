@@ -43,6 +43,19 @@ func RandomOnHemisphere(normal Vector) Vec3 {
 	return onUnitSphere.Neg()
 }
 
+func RandomInUnitDisk() Vec3 {
+	for {
+		p := Vec3{
+			RandomFloat64In(-1.0, 1.0),
+			RandomFloat64In(-1.0, 1.0),
+			0.0,
+		}
+		if p.LengthSquared() < 1.0 {
+			return p
+		}
+	}
+}
+
 func (u Vec3) Neg() Vec3 {
 	return Vec3{-u[0], -u[1], -u[2]}
 }

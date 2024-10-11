@@ -17,6 +17,7 @@ func main() {
 		t.Point{0, 0, -1},
 		t.Vector{0, 1, 0},
 	)
+	camera.SetFocus(10, 3.4)
 
 	groundMat := t.Lambertian{Albedo: t.Color{0.8, 0.8, 0}}
 	centerMat := t.Lambertian{Albedo: t.Color{0.1, 0.2, 0.5}}
