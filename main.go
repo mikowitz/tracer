@@ -69,7 +69,8 @@ func finalImage() {
 				if chooseMat < 0.8 {
 					albedo := t.RandomVec().Prod(t.RandomVec())
 					mat := t.Lambertian{Albedo: albedo}
-					world = append(world, t.NewSphere(center, 0.2, &mat))
+					center2 := center.Add(t.Point{0, rand.Float64(), 0})
+					world = append(world, t.MovingSphere(center, center2, 0.2, &mat))
 				} else if chooseMat < 0.95 {
 					mat := t.Metal{Albedo: t.RandomVecIn(0.5, 1), Fuzz: t.RandomFloat64In(0, 0.5)}
 					world = append(world, t.NewSphere(center, 0.2, &mat))

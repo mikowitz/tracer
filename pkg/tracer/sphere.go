@@ -16,9 +16,9 @@ func NewSphere(center Point, radius float64, mat Material) *Sphere {
 	}
 }
 
-func MovingSphere(center1, center2 Point, radius float64, mat Material) Sphere {
-	return Sphere{
-		Center:   Ray{Origin: center1, Direction: center1.Sub(center2)},
+func MovingSphere(center1, center2 Point, radius float64, mat Material) *Sphere {
+	return &Sphere{
+		Center:   Ray{Origin: center1, Direction: center2.Sub(center1)},
 		Radius:   math.Max(0, radius),
 		Material: mat,
 	}
