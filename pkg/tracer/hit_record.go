@@ -15,5 +15,5 @@ func (hr *HitRecord) SetFaceNormal(ray Ray, outwardNormal Vector) {
 	} else {
 		hr.Normal = outwardNormal.Neg()
 	}
-
+	hr.FrontFace = frontFace
 }

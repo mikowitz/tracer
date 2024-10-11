@@ -103,6 +103,13 @@ func (u Vec3) Reflect(n Vec3) Vector {
 	return u.Sub(n.Mul(2.0 * u.Dot(n)))
 }
 
+func (u Vec3) Refract(n Vec3, ηiOverηt float64) Vec3 {
+	cosθ := math.Min(u.Neg().Dot(n), 1.0)
+	rOutPerp := u.Add(n.Mul(cosθ)).Mul(ηiOverηt)
+	rOutParallel := n.Mul(-math.Sqrt(math.Abs(1.0 - rOutPerp.LengthSquared())))
+	return rOutPerp.Add(rOutParallel)
+}
+
 func (u Vec3) UnitVector() Vec3 {
 	return u.Div(u.Length())
 }
