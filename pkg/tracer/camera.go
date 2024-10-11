@@ -154,7 +154,8 @@ func (c Camera) getRay(x, y int) Ray {
 		origin = c.defocusDiskSample()
 	}
 	direction := pixelSample.Sub(origin)
-	return Ray{Origin: origin, Direction: direction}
+	time := rand.Float64()
+	return Ray{Origin: origin, Direction: direction, Time: time}
 }
 
 func (c Camera) defocusDiskSample() Point {

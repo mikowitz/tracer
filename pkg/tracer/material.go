@@ -27,7 +27,7 @@ func (l *Lambertian) Scatter(ray Ray, rec HitRecord, attenuation *Color, scatter
 	if scatterDirection.IsNearZero() {
 		scatterDirection = rec.Normal
 	}
-	*scattered = Ray{Origin: rec.P, Direction: scatterDirection}
+	*scattered = Ray{Origin: rec.P, Direction: scatterDirection, Time: ray.Time}
 	*attenuation = l.Albedo
 	return true
 }
@@ -35,7 +35,7 @@ func (l *Lambertian) Scatter(ray Ray, rec HitRecord, attenuation *Color, scatter
 func (m *Metal) Scatter(ray Ray, rec HitRecord, attenuation *Color, scattered *Ray) bool {
 	reflected := ray.Direction.Reflect(rec.Normal)
 	reflected = reflected.UnitVector().Add(RandomUnitVector().Mul(m.Fuzz))
-	*scattered = Ray{Origin: rec.P, Direction: reflected}
+	*scattered = Ray{Origin: rec.P, Direction: reflected, Time: ray.Time}
 	*attenuation = m.Albedo
 	return true
 }
@@ -56,7 +56,7 @@ func (d *Dielectric) Scatter(ray Ray, rec HitRecord, attenuation *Color, scatter
 		direction = unitDirection.Reflect(rec.Normal)
 	}
 
-	*scattered = Ray{Origin: rec.P, Direction: direction}
+	*scattered = Ray{Origin: rec.P, Direction: direction, Time: ray.Time}
 	*attenuation = Color{1, 1, 1}
 
 	return true
