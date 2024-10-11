@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"math"
 	"math/rand/v2"
-	"os"
+	"strings"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 type Camera struct {
@@ -56,22 +58,48 @@ func (c *Camera) SetFocus(defocusAngle, focusDist float64) {
 	c.focusDist = focusDist
 }
 
+type processedRow struct {
+	index int
+	row   string
+}
+
 func (c *Camera) Render(world HittableList) {
 	c.initialize()
-	fmt.Printf("P3\n%d %d\n255\n", c.imageWidth, c.imageHeight)
 
+	bar := progressbar.Default(int64(c.imageHeight * c.imageWidth))
+
+	done := make(chan processedRow, c.imageHeight)
+	pixels := make([]string, c.imageHeight)
+
+	var color Color
+	fmt.Printf("P3\n%d %d\n255\n", c.imageWidth, c.imageHeight)
 	for y := range c.imageHeight {
-		fmt.Fprintf(os.Stderr, "\rScanlines remaining: %8d", c.imageHeight-y)
-		for x := range c.imageWidth {
-			color := Color{0, 0, 0}
-			for _ = range c.samplesPerPixel {
-				ray := c.getRay(x, y)
-				color = color.Add(c.rayColor(ray, world, c.maxDepth))
+		go func(y int) {
+			row := make([]string, c.imageWidth)
+			for x := range c.imageWidth {
+				color = Color{0, 0, 0}
+				var ray Ray
+				for _ = range c.samplesPerPixel {
+					c.getRay(x, y, &ray)
+					color = color.Add(c.rayColor(ray, world, c.maxDepth))
+				}
+				row = append(row, color.Mul(c.pixelsSampleScale).ToPpm())
+				err := bar.Add(1)
+				if err != nil {
+					panic(err)
+				}
 			}
-			fmt.Println(color.Mul(c.pixelsSampleScale).ToPpm())
-		}
+			done <- processedRow{index: y, row: strings.Join(row, "\n")}
+		}(y)
 	}
-	fmt.Fprintf(os.Stderr, "\rDone.                             \n")
+
+	for _ = range c.imageHeight {
+		pr := <-done
+		pixels[pr.index] = pr.row
+	}
+	close(done)
+
+	fmt.Println(strings.Join(pixels, "\n"))
 }
 
 func (c *Camera) initialize() {
@@ -107,6 +135,11 @@ func (c *Camera) initialize() {
 	c.defocusDiskV = v.Mul(defocusRadius)
 }
 
+var (
+	White = Color{0, 0, 0}
+	Blue  = Color{0.5, 0.7, 1.0}
+)
+
 func (c Camera) rayColor(ray Ray, world HittableList, depth int) Color {
 	if depth <= 0 {
 		return Color{0, 0, 0}
@@ -128,7 +161,7 @@ func (c Camera) rayColor(ray Ray, world HittableList, depth int) Color {
 	return Color{1.0, 1.0, 1.0}.Mul(1.0 - a).Add(Color{0.5, 0.7, 1.0}.Mul(a))
 }
 
-func (c Camera) getRay(x, y int) Ray {
+func (c Camera) getRay(x, y int, ray *Ray) {
 	xOffset := rand.Float64() - 0.5
 	yOffset := rand.Float64() - 0.5
 
@@ -139,7 +172,8 @@ func (c Camera) getRay(x, y int) Ray {
 		origin = c.defocusDiskSample()
 	}
 	direction := pixelSample.Sub(origin)
-	return Ray{Origin: origin, Direction: direction}
+	(*ray).Origin = origin
+	(*ray).Direction = direction
 }
 
 func (c Camera) defocusDiskSample() Point {
