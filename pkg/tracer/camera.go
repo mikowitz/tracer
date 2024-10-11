@@ -17,6 +17,8 @@ type Camera struct {
 	samplesPerPixel   int
 	pixelsSampleScale float64
 	maxDepth          int
+
+	vfov float64
 }
 
 func NewCamera(imageWidth int, aspectRatio float64) Camera {
@@ -32,6 +34,10 @@ func (c *Camera) SetSamplesPerPixel(samples int) {
 
 func (c *Camera) SetMaxDepth(depth int) {
 	c.maxDepth = depth
+}
+
+func (c *Camera) SetVerticalFieldOfView(vfov float64) {
+	c.vfov = vfov
 }
 
 func (c *Camera) Render(world HittableList) {
@@ -61,7 +67,9 @@ func (c *Camera) initialize() {
 	c.pixelsSampleScale = 1.0 / float64(c.samplesPerPixel)
 
 	focalLength := 1.0
-	viewportHeight := 2.0
+	θ := DegreesToRadians(c.vfov)
+	h := math.Tan(θ / 2)
+	viewportHeight := 2 * h * focalLength
 	viewportWidth := viewportHeight * (float64(c.imageWidth) / float64(c.imageHeight))
 	c.center = Point{0, 0, 0}
 
