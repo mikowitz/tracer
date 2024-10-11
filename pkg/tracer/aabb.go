@@ -24,6 +24,14 @@ func NewBoundingBoxFromPoints(a, b Point) Aabb {
 	return NewBoundingBox(x, y, z)
 }
 
+func NewBoundingBoxFromBoundingBoxes(box0, box1 Aabb) Aabb {
+	return NewBoundingBox(
+		NewIntervalFromIntervals(box0.X, box1.X),
+		NewIntervalFromIntervals(box0.Y, box1.Y),
+		NewIntervalFromIntervals(box0.Z, box1.Z),
+	)
+}
+
 func (aabb Aabb) AxisInterval(n int) Interval {
 	if n == 1 {
 		return aabb.Y

@@ -1,11 +1,20 @@
 package tracer
 
+import "math"
+
 type Interval struct {
 	Min, Max float64
 }
 
 func NewInterval(min, max float64) Interval {
 	return Interval{Min: min, Max: max}
+}
+
+func NewIntervalFromIntervals(a, b Interval) Interval {
+	return NewInterval(
+		math.Min(a.Min, b.Min),
+		math.Max(a.Max, b.Max),
+	)
 }
 
 func (i Interval) Contains(x float64) bool {
