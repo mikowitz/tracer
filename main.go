@@ -14,13 +14,15 @@ func main() {
 
 	groundMat := t.Lambertian{Albedo: t.Color{0.8, 0.8, 0}}
 	centerMat := t.Lambertian{Albedo: t.Color{0.1, 0.2, 0.5}}
-	leftMat := t.Dielectric{RefractionIndex: 1.00 / 1.33}
+	leftMat := t.Dielectric{RefractionIndex: 1.5}
+	bubbleMat := t.Dielectric{RefractionIndex: 1.00 / 1.5}
 	rightMat := t.Metal{Albedo: t.Color{0.8, 0.6, 0.2}, Fuzz: 0.8}
 
 	world := t.HittableList{
 		&t.Sphere{Center: t.Point{0, -100.5, -1}, Radius: 100, Material: &groundMat},
 		&t.Sphere{Center: t.Point{0, 0, -1.2}, Radius: 0.5, Material: &centerMat},
 		&t.Sphere{Center: t.Point{-1, 0, -1}, Radius: 0.5, Material: &leftMat},
+		&t.Sphere{Center: t.Point{-1, 0, -1}, Radius: 0.4, Material: &bubbleMat},
 		&t.Sphere{Center: t.Point{1, 0, -1}, Radius: 0.5, Material: &rightMat},
 	}
 
