@@ -61,7 +61,7 @@ func (c *Camera) Render(world HittableList) {
 	fmt.Printf("P3\n%d %d\n255\n", c.imageWidth, c.imageHeight)
 
 	for y := range c.imageHeight {
-		fmt.Fprintf(os.Stderr, "\rScanlines remaining: %5d", c.imageHeight-y)
+		fmt.Fprintf(os.Stderr, "\rScanlines remaining: %8d", c.imageHeight-y)
 		for x := range c.imageWidth {
 			color := Color{0, 0, 0}
 			for _ = range c.samplesPerPixel {
@@ -71,7 +71,7 @@ func (c *Camera) Render(world HittableList) {
 			fmt.Println(color.Mul(c.pixelsSampleScale).ToPpm())
 		}
 	}
-	fmt.Fprintf(os.Stderr, "\rDone.                     \n")
+	fmt.Fprintf(os.Stderr, "\rDone.                             \n")
 }
 
 func (c *Camera) initialize() {
